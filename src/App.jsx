@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
@@ -7,9 +8,20 @@ import About from './pages/About'
 import EditGesture from './pages/EditGesture'
 
 function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('signspeak-theme') || 'dark')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('signspeak-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+  }
+
   return (
     <div className="app-shell">
-      <Navbar />
+      <Navbar theme={theme} onToggleTheme={toggleTheme} />
       <main className="main-content">
         <Routes>
           <Route path="/" element={<Home />} />

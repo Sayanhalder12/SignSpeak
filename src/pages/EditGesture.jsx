@@ -33,7 +33,12 @@ function EditGesture() {
 
   return (
     <div className="page edit-page">
-      <h1>Edit Gesture Mappings</h1>
+      <div className="edit-page-head">
+        <h1>Edit Gesture Mappings</h1>
+        <button type="button" className="btn btn-primary">
+          Add New Mapping
+        </button>
+      </div>
       <GlassCard className="edit-table-wrap">
         <div className="edit-table">
           <div className="table-head">Flex Sensor Pattern</div>

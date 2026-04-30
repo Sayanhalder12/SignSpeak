@@ -43,7 +43,7 @@ function Home() {
           <Link to="/flex" className="btn btn-primary">
             Try Flex
           </Link>
-          <Link to="/camera" className="btn btn-secondary">
+          <Link to="/camera" className="btn btn-primary">
             Try Camera
           </Link>
         </div>

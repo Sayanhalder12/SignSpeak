@@ -32,19 +32,21 @@ function About() {
   return (
     <div className="page about-page">
       <section className="glass-card about-card">
-        <h1>About SIGNSPEAK</h1>
-        <p>
-          SIGNSPEAK is a communication-first interface that turns sign and finger gestures into text
-          and voice outputs. The goal is to make conversations more inclusive by giving users an
-          intuitive and elegant way to bridge communication gaps.
-        </p>
-        <h2>Tech Stack</h2>
-        <ul className="tech-list">
-          <li>React + Vite</li>
-          <li>React Router</li>
-          <li>Web APIs (getUserMedia)</li>
-          <li>Responsive glassmorphism UI with CSS</li>
-        </ul>
+        <div className="about-content">
+          <h1>About SIGNSPEAK</h1>
+          <p>
+            SIGNSPEAK is a communication-first interface that turns sign and finger gestures into text
+            and voice outputs. The goal is to make conversations more inclusive by giving users an
+            intuitive and elegant way to bridge communication gaps.
+          </p>
+          <h2>Tech Stack</h2>
+          <ul className="tech-list">
+            <li>React + Vite</li>
+            <li>React Router</li>
+            <li>Web APIs (getUserMedia)</li>
+            <li>Responsive glassmorphism UI with CSS</li>
+          </ul>
+        </div>
       </section>
 
       <section className="team-section">
