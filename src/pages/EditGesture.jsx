@@ -1,95 +1,138 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import GlassCard from '../components/GlassCard'
 
-const initialMappings = [
-  { id: 1, pattern: '01000', message: 'Hello' },
-  { id: 2, pattern: '11100', message: 'I need water' },
-  { id: 3, pattern: '00111', message: 'Thank you' },
-]
+const API_URL = 'http://localhost:5000/api/gesture'
+
+function convertPattern(pattern) {
+  return pattern.split('').map((num) => Number(num))
+}
 
 function EditGesture() {
-  const [mappings, setMappings] = useState(initialMappings)
-  const [editingId, setEditingId] = useState(null)
-  const [draft, setDraft] = useState({ pattern: '', message: '' })
+  const [pattern, setPattern] = useState('')
+  const [message, setMessage] = useState('')
+  const [gestures, setGestures] = useState([])
 
-  const startEdit = (row) => {
-    setEditingId(row.id)
-    setDraft({ pattern: row.pattern, message: row.message })
+  const fetchGestures = async () => {
+    try {
+      const res = await fetch(API_URL)
+      const data = await res.json()
+      setGestures(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Error fetching gestures:', error)
+      setGestures([])
+    }
   }
 
-  const saveEdit = (id) => {
-    setMappings((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, pattern: draft.pattern.trim(), message: draft.message.trim() } : row,
-      ),
-    )
-    setEditingId(null)
-  }
+  useEffect(() => {
+    fetchGestures()
+  }, [])
 
-  const cancelEdit = () => {
-    setEditingId(null)
-    setDraft({ pattern: '', message: '' })
+  const handleSave = async () => {
+    const trimmedPattern = pattern.trim()
+    const trimmedMessage = message.trim()
+
+    if (!/^[01]{5}$/.test(trimmedPattern)) {
+      alert('Pattern must be exactly 5 characters and contain only 0 or 1')
+      return
+    }
+
+    if (!trimmedMessage) {
+      alert('Message is required')
+      return
+    }
+
+    const converted = convertPattern(trimmedPattern)
+    console.log(trimmedPattern)
+    console.log(converted)
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fingerValues: converted,
+          outputText: trimmedMessage,
+        }),
+      })
+
+      let responseData = null
+      try {
+        responseData = await response.json()
+      } catch {
+        responseData = null
+      }
+      console.log(responseData)
+
+      if (!response.ok) {
+        throw new Error(responseData?.message || 'Failed to save gesture')
+      }
+
+      alert('Gesture saved')
+      setPattern('')
+      setMessage('')
+      await fetchGestures()
+    } catch (error) {
+      console.error('Error saving gesture:', error)
+    }
   }
 
   return (
     <div className="page edit-page">
       <div className="edit-page-head">
         <h1>Edit Gesture Mappings</h1>
-        <button type="button" className="btn btn-primary">
-          Add New Mapping
-        </button>
       </div>
+
+      <GlassCard className="edit-table-wrap">
+        <h2>Add Mapping</h2>
+        <div className="table-row" style={{ marginTop: '0.75rem' }}>
+          <div>
+            <input
+              type="text"
+              value={pattern}
+              onChange={(e) => setPattern(e.target.value)}
+              placeholder="Pattern (e.g. 01000)"
+              maxLength={5}
+            />
+          </div>
+          <div>
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Message"
+            />
+          </div>
+          <div className="table-actions">
+            <button type="button" className="btn btn-primary" onClick={handleSave}>
+              Save
+            </button>
+          </div>
+        </div>
+      </GlassCard>
+
       <GlassCard className="edit-table-wrap">
         <div className="edit-table">
-          <div className="table-head">Flex Sensor Pattern</div>
+          <div className="table-head">Pattern</div>
           <div className="table-head">Message</div>
-          <div className="table-head">Actions</div>
+          <div className="table-head">Created At</div>
 
-          {mappings.map((row) => {
-            const isEditing = editingId === row.id
-            return (
-              <div key={row.id} className="table-row">
-                <div>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={draft.pattern}
-                      onChange={(e) => setDraft((prev) => ({ ...prev, pattern: e.target.value }))}
-                    />
-                  ) : (
-                    <code>{row.pattern}</code>
-                  )}
-                </div>
-                <div>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={draft.message}
-                      onChange={(e) => setDraft((prev) => ({ ...prev, message: e.target.value }))}
-                    />
-                  ) : (
-                    <span>{row.message}</span>
-                  )}
-                </div>
-                <div className="table-actions">
-                  {isEditing ? (
-                    <>
-                      <button type="button" className="btn btn-save" onClick={() => saveEdit(row.id)}>
-                        Save
-                      </button>
-                      <button type="button" className="btn btn-cancel" onClick={cancelEdit}>
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" className="btn btn-secondary" onClick={() => startEdit(row)}>
-                      Edit
-                    </button>
-                  )}
-                </div>
+          {gestures.map((gesture) => (
+            <div key={gesture._id || `${gesture.fingerValues?.join('')}-${gesture.outputText}`} className="table-row">
+              <div>
+                <code>{Array.isArray(gesture.fingerValues) ? gesture.fingerValues.join('') : ''}</code>
               </div>
-            )
-          })}
+              <div>
+                <span>{gesture.outputText}</span>
+              </div>
+              <div>
+                <span>
+                  {gesture.createdAt ? new Date(gesture.createdAt).toLocaleString() : '-'}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </GlassCard>
     </div>
